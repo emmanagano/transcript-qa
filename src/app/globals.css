@@ -1,28 +1,33 @@
 @import 'tailwindcss';
 
+/* "Teal & gold" palette. Each colour has ONE job (see CLAUDE.md > Design). */
 @theme {
-  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
 
-  --color-ink: #1f2433;
-  --color-muted: #5a6072;
-  --color-page: #f5f6fa;
-  --color-line: #e1e4ec;
-  --color-field: #c3c7d3;
-  --color-brand: #1f5fcc;
-  --color-brand-dark: #16479c;
-  --color-accuracy: #2e8b57;
-  --color-effort: #1f6fd1;
-  --color-senior: #7b3fd1;
-  --color-del-bg: #fde2e6;
-  --color-del-fg: #8e1428;
-  --color-ins-bg: #dff3e6;
-  --color-ins-fg: #0f5a31;
+  --color-ink: #17262b;
+  --color-muted: #55636a;
+  --color-page: #f7f6f2; /* soft warm white, low glare */
+  --color-line: #e3e6e2; /* card borders */
+  --color-line-soft: #ecefea; /* row dividers */
+  --color-field: #c5cdc9; /* input borders */
 
-  /* sharp corners everywhere; pills opt in with rounded-full */
-  --radius-sm: 0;
-  --radius: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
+  --color-brand: #0f766e; /* teal: the only brand accent */
+  --color-brand-dark: #0b5a54;
+  --color-tint: #ddf0ec; /* soft teal cards and highlights */
+  --color-tint-soft: #eef7f5;
+  --color-chip: #eef1ef; /* neutral chip background */
+  --color-gold: #f2a93b; /* praise only, never a mistake */
+
+  /* both comparisons use the one brand colour; their names tell them apart */
+  --color-accuracy: #0f766e;
+  --color-effort: #0f766e;
+
+  --color-del-bg: #fde4e1; /* struck-out words */
+  --color-del-fg: #a3261a;
+  --color-ins-bg: #ddf3e4; /* corrected / added words */
+  --color-ins-fg: #17603a;
+  --color-ins-line: #2f9e62;
 }
 
 body {
@@ -30,13 +35,18 @@ body {
   color: var(--color-ink);
 }
 
-/* in @layer base so Tailwind utilities (text-white on buttons, etc.) can override link colors */
+/* base layer so Tailwind utilities (text-white on buttons, etc.) can override these */
 @layer base {
   a {
     color: var(--color-brand);
   }
   a:hover {
     color: var(--color-brand-dark);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
   }
 }
 

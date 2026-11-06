@@ -36,7 +36,7 @@ export default function ResultsPage() {
   if (!current) {
     return (
       <Card className="mx-auto mt-10 flex max-w-[560px] flex-col items-start gap-4 p-8">
-        <h1 className="text-2xl font-extrabold">No comparison open</h1>
+        <h1 className="text-2xl font-bold">No comparison open</h1>
         <p className="text-muted">
           Results only stay on screen until you refresh or leave, so transcripts never get stored. Your score was saved, and you can find it in Stats.
         </p>
@@ -60,19 +60,24 @@ export default function ResultsPage() {
     setRetrying(false);
   };
 
+  let praise = false; // gold is only for praise
   let encouragement =
     r.totalChanges > 0 ? 'That’s careful work on this case. Nice job.' : 'The AI template needed no changes this time.';
   if (isAcc) {
     const g = gradeFor(score).letter;
     if (average !== null) {
       const diff = score - average;
+      praise = diff >= 0.05;
       encouragement =
         diff >= 0.05
-          ? `${g === 'A' ? 'Great work. ' : ''}${diff.toFixed(1)} points above your average.`
+          ? `↑ ${diff.toFixed(1)} pts above your average`
           : diff <= -0.05
             ? `${Math.abs(diff).toFixed(1)} points below your average. Check the mistakes below for patterns.`
             : 'Right on your average.';
-    } else encouragement = g === 'A' ? 'Great work.' : 'Check the mistakes below for patterns.';
+    } else {
+      praise = g === 'A';
+      encouragement = g === 'A' ? 'Great work.' : 'Check the mistakes below for patterns.';
+    }
   }
 
   return (
@@ -81,12 +86,12 @@ export default function ResultsPage() {
         <div className="flex flex-col gap-2.5">
           <Link href="/upload" className="text-sm font-medium">← Back to Upload</Link>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-[32px] font-extrabold tracking-tight">{caseName}</h1>
+            <h1 className="text-[32px] font-bold tracking-tight">{caseName}</h1>
             <Pill bg={MODE_COLOR[mode]} fg="#FFFFFF">{isAcc ? 'Accuracy · You vs QA' : 'Effort · You vs AI'}</Pill>
-            {current.aiTool && <Pill bg="#E1E4EC" fg="#1F2433">{current.aiTool}</Pill>}
+            {current.aiTool && <Pill bg="#EEF1EF" fg="#17262B">{current.aiTool}</Pill>}
           </div>
           {current.saveError ? (
-            <p role="alert" className="flex flex-wrap items-center gap-3 border border-[#C62F46] bg-del-bg px-4 py-2.5 text-sm text-del-fg">
+            <p role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-2.5 text-sm text-del-fg">
               Your score couldn’t be saved: {current.saveError}
               <button onClick={retry} disabled={retrying} className="font-bold underline">
                 {retrying ? 'Trying…' : 'Try again'}
@@ -94,7 +99,7 @@ export default function ResultsPage() {
             </p>
           ) : (
             <span className="flex items-center gap-2 text-sm text-muted">
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B57" strokeWidth="2.4">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.4">
                 <path d="M5 12l5 5 9-10" />
               </svg>
               Saved to your stats{current.savedAt ? ` · ${formatDate(current.savedAt)}` : ''}
@@ -110,16 +115,19 @@ export default function ResultsPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isAcc ? (
           <>
-            <Card accent={MODE_COLOR.accuracy} className="flex flex-wrap items-center gap-6 p-6 sm:col-span-2">
+            <section className="flex flex-wrap items-center gap-6 rounded-[20px] bg-brand p-6 text-white sm:col-span-2">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-muted">Accuracy</span>
-                <span className="text-[64px] font-extrabold leading-none tracking-tighter">{pct(score)}</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-white/80">Accuracy</span>
+                <span className="font-heading text-[64px] font-bold leading-none tracking-tighter">
+                  {score.toFixed(1)}
+                  <span className="text-gold">%</span>
+                </span>
               </div>
-              <div className="flex flex-col items-start gap-2">
+              <div className="flex flex-col items-start gap-2.5">
                 <GradeBadge percent={score} size="lg" />
-                <span className="text-sm text-muted">{encouragement}</span>
+                <Encouragement text={encouragement} praise={praise} />
               </div>
-            </Card>
+            </section>
             <StatCard label="Errors" value={r.totalErrors.toLocaleString()} note="corrections by the QA" />
             <StatCard
               label="Words in QA version"
@@ -129,14 +137,16 @@ export default function ResultsPage() {
           </>
         ) : (
           <>
-            <Card accent={MODE_COLOR.effort} className="flex flex-col gap-2.5 p-6 sm:col-span-2">
-              <span className="text-sm font-semibold text-muted">Changes you made</span>
+            <section className="flex flex-col gap-2.5 rounded-[20px] bg-brand p-6 text-white sm:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-white/80">Changes you made</span>
               <div className="flex flex-wrap items-baseline gap-4">
-                <span className="text-[64px] font-extrabold leading-none tracking-tighter">{r.totalChanges.toLocaleString()}</span>
-                <span className="text-lg font-semibold">{pct(r.changedShare * 100, 0)} of the AI&apos;s words changed</span>
+                <span className="font-heading text-[64px] font-bold leading-none tracking-tighter">{r.totalChanges.toLocaleString()}</span>
+                <span className="text-lg font-semibold">
+                  <span className="text-gold">{pct(r.changedShare * 100, 0)}</span> of the AI&apos;s words changed
+                </span>
               </div>
-              <span className="text-[15px] text-muted">{encouragement}</span>
-            </Card>
+              <span className="text-[15px] text-white/90">{encouragement}</span>
+            </section>
             <StatCard label="Lines re-segmented" value={r.counts.seg.toLocaleString()} note="split, merged or re-broken" />
             <StatCard label="Timestamps adjusted" value={r.counts.time.toLocaleString()} note="moved 0.25 s or more" />
           </>
@@ -207,4 +217,10 @@ function lineRanges(nums: number[]): string {
     i = j;
   }
   return out.join(', ');
+}
+
+/** Praise gets a gold pill (ink text, never white on gold); everything else is plain white text on the teal card. */
+function Encouragement({ text, praise }: { text: string; praise: boolean }) {
+  if (praise) return <span className="rounded-full bg-gold px-3 py-1 text-sm font-semibold text-ink">{text}</span>;
+  return <span className="text-sm text-white/90">{text}</span>;
 }

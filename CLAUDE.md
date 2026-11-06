@@ -46,11 +46,56 @@ Login → Upload → Results → Stats. Top bar (Upload, Stats, name, Log out) o
 Results has "Compare another" and "View stats". Stats has Accuracy / Effort tabs, "My stats" (or the selected
 transcriber's), a trend line, and a team board grouped by transcriber with colored header bars.
 
-## Design
-Inspired by monday.com's color psychology, own branding. White base, Figtree font, desktop-first.
-Sharp corners everywhere (radius 0); pills (rounded-full) only for type tags, grades and small badges.
-Change-type colors live in src/lib/kinds.ts. Every pill has a text label (never color alone).
-Mockups: the "Transcript QA App — Screens" design artifact. "TranscriptQA" is a placeholder name.
+## Design — "Teal & gold" (redesign, Nov 2026; replaces the earlier sharp-cornered monday.com look)
+Reference mockup: "Direction E · Teal & gold" on the "Transcript QA App — Screens" design canvas (Results screen).
+Apply it to every screen (Login, Set password, Upload, Results, Stats). Layout, flow and copy stay as they are;
+this is a visual restyle. Desktop-first, light mode only. "TranscriptQA" is still a placeholder name.
+
+### Color roles (each color has ONE job — don't reuse a color outside its role)
+| Token | Hex | Job |
+|---|---|---|
+| page | #F7F6F2 | page background (soft warm white, low glare for long reading) |
+| surface | #FFFFFF | cards, top bar, tables |
+| line | #E3E6E2 | card borders; row dividers #ECEEEA |
+| ink | #17262B | text, headings, big numbers (the score reads as a neutral fact) |
+| muted | #55636A | secondary text; small uppercase labels #5B6B66 |
+| teal (primary) | #0F766E | main buttons (white text), active tab/filter, score card background, links |
+| teal-tint | #DDF0EC (text #0B5A54) | soft teal cards, quiet highlights; neutral chip bg #EEF1EF |
+| gold (reward) | #F2A93B (ink text on it) | ONLY praise: "↑ x pts above your average", personal bests, Effort headline accents, the "%" on the score. Gold never marks a mistake. |
+| coral (removed) | text #A3261A on #FDE4E1 | struck-out words in the change table (`<del>`) |
+| green (fix) | text #17603A on #DDF3E4, 2px underline #2F9E62 | corrected/added words (`<ins>`) |
+Never use orange, red or gold as a general accent: they read as warnings or rewards. Teal is the only brand accent.
+
+### Change-type colors (src/lib/kinds.ts) — warm = content errors, cool = formatting
+| Kind | Dot color |
+|---|---|
+| wrong (Wrong word / Word fixed) | coral #E5644E |
+| missed (Missed word / Word removed) | rose #D6457A |
+| extra (Extra word / Word added) | magenta #B2459B |
+| punct | blue #3E7BFA |
+| caps | violet #6E6CF0 |
+| dash | slate #64748B |
+| seg (Effort) | gray #8B8D98 |
+| time (Effort) | indigo #4F46E5 |
+Type tags are soft pills: neutral bg #EEF1EF, ink text, a 7–8px colored dot before the label (dot = aria-hidden;
+the label carries the meaning). Selected filter chip = solid teal with white text.
+Charts: "Errors/Changes by type" is a vertical bar chart; all bars neutral #E3E8E6 except the most common type,
+drawn in that type's dot color, with its label bolded. Trend chart line in teal; latest point in gold.
+
+### Grades (src/lib/grades.ts) — soft traffic light, tinted pills with strong letters
+A green (#DDF3E4 bg / #17603A text) · B lime (#ECF6D5 / #46601A) · C amber (#FBF0D6 / #7A5300) ·
+D orange (#FCE6D6 / #8A3B0E) · F muted red (#FBE3E1 / #8E2A22). F must not shout. On the teal score card the grade is a
+large white rounded tile with an ink letter.
+
+### Shape and type
+- Rounded corners (sharp corners looked tacky): cards 20px, top bar 16px, buttons/inputs/drop zones 12px,
+  small tiles 9–10px, highlight marks in text 5px, pills/chips/avatars fully rounded.
+- No hard shadows; cards = white + 1px line border. The top bar is a floating rounded white bar with 16px margin.
+- Fonts: Space Grotesk (600/700) for headings, big numbers and the logo; Inter (400–700) for everything else.
+  Replace Figtree (src/app/layout.tsx next/font). Small section labels: 12px, uppercase, letter-spacing 0.08–0.18em.
+- Buttons: primary = teal bg, white text, 48px tall, 12px radius; secondary = white bg, 1.5px ink border, ink text.
+- Contrast: body text ≥ 4.5:1, never white text on gold; focus ring = 3px teal outline, 2px offset.
+- Every pill still has a text label; color is never the only signal (strikethrough/underline in the change table too).
 
 ## Stack
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 (@theme tokens in src/app/globals.css) ·

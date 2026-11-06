@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { LogoMark } from '@/components/Logo';
 import { Spinner } from '@/components/Spinner';
 
-const input = 'h-12 w-full border border-field bg-white px-3.5 text-base text-ink';
+const input = 'h-12 w-full rounded-xl border border-field bg-white px-3.5 text-base text-ink';
 
 /** Where invite and password-reset links land. */
 export default function SetPasswordPage() {
@@ -28,7 +28,7 @@ export default function SetPasswordPage() {
   if (!session) {
     return (
       <main className="mx-auto flex max-w-[440px] flex-col gap-4 px-6 py-24">
-        <h1 className="text-2xl font-extrabold">This link has expired</h1>
+        <h1 className="text-2xl font-bold">This link has expired</h1>
         <p className="text-muted">Invite and reset links only work once and for a limited time. Ask for a new invite, or request a new reset link from the login page.</p>
         <a href="/login" className="font-semibold">Go to log in</a>
       </main>
@@ -60,11 +60,11 @@ export default function SetPasswordPage() {
     <main className="mx-auto flex min-h-screen max-w-[440px] flex-col justify-center gap-8 px-6 py-16">
       <div className="flex items-center gap-3">
         <LogoMark size={12} />
-        <span className="text-xl font-extrabold">TranscriptQA</span>
+        <span className="font-heading text-xl font-bold">TranscriptQA</span>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-extrabold tracking-tight">Set your password</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Set your password</h1>
           <p className="text-muted">Signed in as {session.user.email}</p>
         </div>
         <div className="flex flex-col gap-2">
@@ -79,8 +79,8 @@ export default function SetPasswordPage() {
           <label htmlFor="pw2" className="text-sm font-semibold">Confirm password</label>
           <input id="pw2" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} />
         </div>
-        {error && <p role="alert" className="border border-[#C62F46] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
-        <button type="submit" disabled={busy} className="h-12 bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">
+        {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
+        <button type="submit" disabled={busy} className="h-12 rounded-xl bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">
           {busy ? 'Saving…' : 'Save and continue'}
         </button>
       </form>

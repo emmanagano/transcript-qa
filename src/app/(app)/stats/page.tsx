@@ -12,16 +12,6 @@ import { Card, GradeBadge, StatCard } from '@/components/ui';
 import { TrendChart } from '@/components/TrendChart';
 import { Spinner } from '@/components/Spinner';
 
-const GROUP_COLORS: Array<[string, string]> = [
-  ['#7B3FD1', '#FFFFFF'],
-  ['#FFCB00', '#1F2433'],
-  ['#0E7C7B', '#FFFFFF'],
-  ['#C2510F', '#FFFFFF'],
-  ['#1F6FD1', '#FFFFFF'],
-  ['#9CD326', '#1F2433'],
-  ['#C62F46', '#FFFFFF'],
-];
-
 const RANGES = [
   { id: '30', label: 'Last 30 days', days: 30 },
   { id: '90', label: 'Last 90 days', days: 90 },
@@ -29,7 +19,7 @@ const RANGES = [
   { id: 'all', label: 'All time', days: 0 },
 ];
 
-const select = 'h-11 min-w-[180px] border border-field bg-white px-3 text-[15px] text-ink';
+const select = 'h-11 min-w-[180px] rounded-xl border border-field bg-white px-3 text-[15px] text-ink';
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
@@ -124,22 +114,21 @@ export default function StatsPage() {
       value: isAcc ? Number(x.score) : x.total_changes,
     }));
 
-  // team board: one group per person, colors assigned by name order so they stay stable
+  // team board: one group per person
   const teamRows = who === 'everyone' ? inRange : inRange.filter((x) => x.user_id === who);
   const ids = Array.from(new Set(teamRows.map((x) => x.user_id))).sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
-  const colorIndex = (id: string) => Math.max(0, people.findIndex((p) => p.id === id)) % GROUP_COLORS.length;
   const groups = ids.map((id) => {
     const list = teamRows
       .filter((x) => x.user_id === id)
       .sort((a, b) => (sort === 'date' ? b.created_at.localeCompare(a.created_at) : Number(b.score) - Number(a.score)));
-    return { id, name: nameOf(id), list, color: GROUP_COLORS[colorIndex(id)] };
+    return { id, name: nameOf(id), list };
   });
 
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[32px] font-extrabold tracking-tight">Stats</h1>
+          <h1 className="text-[32px] font-bold tracking-tight">Stats</h1>
           <p className="text-muted">Your progress and the whole team’s, case by case.</p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -165,7 +154,7 @@ export default function StatsPage() {
         </div>
       </div>
 
-      {error && <p role="alert" className="border border-[#C62F46] bg-del-bg px-4 py-3 text-sm text-del-fg">Couldn’t load stats: {error}</p>}
+      {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">Couldn’t load stats: {error}</p>}
 
       <div role="tablist" aria-label="Stats type" className="flex flex-wrap border-b border-field">
         {(['accuracy', 'effort'] as Mode[]).map((m) => {
@@ -179,7 +168,7 @@ export default function StatsPage() {
               className={`-mb-px flex min-h-12 items-center gap-2.5 border-b-4 px-5 text-[15px] ${on ? 'bg-white font-bold text-ink' : 'border-transparent font-medium text-muted hover:text-ink'}`}
               style={on ? { borderBottomColor: MODE_COLOR[m] } : undefined}
             >
-              <span aria-hidden="true" className="h-2.5 w-2.5" style={{ background: MODE_COLOR[m] }} />
+              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ background: MODE_COLOR[m] }} />
               {m === 'accuracy' ? 'Accuracy · QA vs transcribers' : 'Effort · AI vs transcribers'}
             </button>
           );
@@ -187,7 +176,7 @@ export default function StatsPage() {
       </div>
 
       <section aria-label={focusName} className="flex flex-col gap-4">
-        <h2 className="text-xl font-extrabold">{focusName}</h2>
+        <h2 className="text-xl font-bold">{focusName}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((c) => (
             <StatCard
@@ -215,7 +204,7 @@ export default function StatsPage() {
       <section aria-label="Team" className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-extrabold">Team</h2>
+            <h2 className="text-xl font-bold">Team</h2>
             <span className="text-[13px] text-muted">Visible to everyone on the team</span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -228,7 +217,7 @@ export default function StatsPage() {
         </div>
 
         {actionError && (
-          <p role="alert" className="border border-[#C62F46] bg-del-bg px-4 py-3 text-sm text-del-fg">{actionError}</p>
+          <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{actionError}</p>
         )}
 
         {groups.length === 0 && (
@@ -240,9 +229,9 @@ export default function StatsPage() {
           const visible = open ? g.list : g.list.slice(0, 10);
           const a = avg(g.list.map((x) => Number(x.score)));
           return (
-            <div key={g.id} className="flex flex-col border border-line bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-3" style={{ background: g.color[0], color: g.color[1] }}>
-                <span className="text-base font-extrabold">{g.name}</span>
+            <div key={g.id} className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-tint px-6 py-3 text-brand-dark">
+                <span className="text-base font-bold">{g.name}</span>
                 <span className="text-sm font-semibold">
                   {g.list.length} case{g.list.length === 1 ? '' : 's'} ·{' '}
                   {isAcc ? `average ${pct(a)} · ${gradeFor(a).letter}` : `average ${Math.round(avg(g.list.map((x) => x.total_changes)))} changes per case`}
@@ -275,7 +264,7 @@ export default function StatsPage() {
                                 if (e.key === 'Enter') saveName();
                                 if (e.key === 'Escape') setEditing(null);
                               }}
-                              className="min-h-9 w-full border border-field bg-white px-2.5 font-semibold"
+                              className="min-h-9 w-full rounded-lg border border-field bg-white px-2.5 font-semibold"
                             />
                           ) : (
                             x.case_name
@@ -300,19 +289,19 @@ export default function StatsPage() {
                               {confirmId === x.id ? (
                                 <>
                                   <span className="text-sm font-semibold">Delete?</span>
-                                  <button onClick={() => remove(x.id)} className="min-h-9 bg-[#C62F46] px-3 text-sm font-bold text-white hover:bg-[#A8243A]">Yes, delete</button>
-                                  <button onClick={() => setConfirmId(null)} className="min-h-9 border border-field bg-white px-3 text-sm font-bold">Cancel</button>
+                                  <button onClick={() => remove(x.id)} className="min-h-9 rounded-lg bg-[#A3261A] px-3 text-sm font-bold text-white hover:bg-[#8E2A22]">Yes, delete</button>
+                                  <button onClick={() => setConfirmId(null)} className="min-h-9 rounded-lg border-[1.5px] border-field bg-white px-3 text-sm font-bold">Cancel</button>
                                 </>
                               ) : (
                                 <>
                                   <button
                                     onMouseDown={(e) => editing?.id === x.id && e.preventDefault()}
                                     onClick={() => (editing?.id === x.id ? saveName() : setEditing({ id: x.id, name: x.case_name }))}
-                                    className="min-h-9 border border-brand bg-white px-3 text-sm font-bold text-brand hover:bg-[#EEF3FC]"
+                                    className="min-h-9 rounded-lg border-[1.5px] border-brand bg-white px-3 text-sm font-bold text-brand hover:bg-tint-soft"
                                   >
                                     {editing?.id === x.id ? 'Save' : 'Rename'}
                                   </button>
-                                  <button onClick={() => setConfirmId(x.id)} className="min-h-9 border border-field bg-white px-3 text-sm font-bold text-ink hover:bg-page">Delete</button>
+                                  <button onClick={() => setConfirmId(x.id)} className="min-h-9 rounded-lg border-[1.5px] border-field bg-white px-3 text-sm font-bold text-ink hover:bg-page">Delete</button>
                                 </>
                               )}
                             </span>

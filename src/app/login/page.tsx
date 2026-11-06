@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { LogoMark } from '@/components/Logo';
 
 const input =
-  'h-12 w-full border border-field bg-white px-3.5 text-base text-ink placeholder:text-muted/70';
+  'h-12 w-full rounded-xl border border-field bg-white px-3.5 text-base text-ink placeholder:text-muted/70';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,35 +44,35 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-wrap">
-      <section className="flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-12 bg-ink px-8 py-16 text-white sm:px-14">
+      <section className="flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-12 bg-brand px-8 py-16 text-white sm:px-14">
         <div className="flex items-center gap-3">
           <LogoMark size={12} />
-          <span className="text-xl font-extrabold tracking-tight">TranscriptQA</span>
+          <span className="font-heading text-xl font-bold tracking-tight">TranscriptQA</span>
         </div>
         <div className="flex max-w-[520px] flex-col gap-6">
-          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">
+          <h1 className="text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">
             See how accurate you are, and how much work you put in.
           </h1>
-          <p className="text-lg leading-relaxed text-[#C9CDD8]">
+          <p className="text-lg leading-relaxed text-white/85">
             Compare your transcript with the QA&apos;s version and the AI template. Every fix you make gets counted.
           </p>
           <div className="flex flex-wrap gap-2 text-sm font-semibold">
-            <span className="rounded-full bg-accuracy px-3.5 py-1.5">Accuracy</span>
-            <span className="rounded-full bg-effort px-3.5 py-1.5">Effort</span>
-            <span className="rounded-full bg-[#FFCB00] px-3.5 py-1.5 text-ink">Team stats</span>
+            <span className="rounded-full bg-white/15 px-3.5 py-1.5">Accuracy</span>
+            <span className="rounded-full bg-white/15 px-3.5 py-1.5">Effort</span>
+            <span className="rounded-full bg-white/15 px-3.5 py-1.5">Team stats</span>
           </div>
         </div>
-        <div aria-hidden="true" className="grid max-w-[520px] grid-cols-8 gap-1">
-          {['#2E8B57', '#2E8B57', '#2E8B57', '#9CD326', '#FFCB00', '#2E8B57', '#2E8B57', '#1F6FD1'].map((c, i) => (
-            <span key={i} className="h-6" style={{ background: c }} />
-          ))}
+        <div aria-hidden="true" className="flex max-w-[520px] flex-col gap-2">
+          <span className="h-3 w-full rounded-full bg-white/90" />
+          <span className="h-3 w-2/3 rounded-full bg-white/45" />
+          <span className="h-3 w-5/6 rounded-full bg-white/90" />
         </div>
       </section>
 
       <section className="flex min-w-0 flex-[1_1_520px] items-center justify-center px-6 py-16">
         <form onSubmit={submit} className="flex w-full max-w-[400px] flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h2 className="text-3xl font-extrabold tracking-tight">{mode === 'login' ? 'Log in' : 'Reset password'}</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{mode === 'login' ? 'Log in' : 'Reset password'}</h2>
             <p className="text-muted">
               {mode === 'login' ? 'Welcome back. Pick up where you left off.' : 'We’ll email you a link to set a new password.'}
             </p>
@@ -95,10 +95,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          {error && <p role="alert" className="border border-[#C62F46] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
-          {notice && <p role="status" className="border border-accuracy bg-ins-bg px-4 py-3 text-sm text-ins-fg">{notice}</p>}
+          {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
+          {notice && <p role="status" className="rounded-xl border border-ins-line bg-ins-bg px-4 py-3 text-sm text-ins-fg">{notice}</p>}
 
-          <button type="submit" disabled={busy} className="h-12 bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">
+          <button type="submit" disabled={busy} className="h-12 rounded-xl bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">
             {busy ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Send reset link'}
           </button>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
             </button>
           )}
 
-          <p className="border border-line bg-white px-4 py-3.5 text-sm leading-relaxed text-muted">
+          <p className="rounded-xl border border-line bg-white px-4 py-3.5 text-sm leading-relaxed text-muted">
             Accounts are invite-only. No account yet? Ask your senior transcriber to send you an invite.
           </p>
         </form>

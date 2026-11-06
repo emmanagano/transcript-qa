@@ -20,11 +20,11 @@ function Text({ pieces, side }: { pieces: Piece[]; side: 'old' | 'new' }) {
             <span key={i} className="italic text-muted">(nothing here)</span>
           ) : null
         ) : side === 'old' ? (
-          <del key={i} className="bg-del-bg px-[3px] py-px text-del-fg">
+          <del key={i} className="rounded-[5px] bg-del-bg px-[3px] py-px text-del-fg">
             {p.text}
           </del>
         ) : (
-          <ins key={i} className="bg-ins-bg px-[3px] py-px font-bold text-ins-fg underline underline-offset-[3px]">
+          <ins key={i} className="rounded-[5px] bg-ins-bg px-[3px] py-px font-bold text-ins-fg underline decoration-2 decoration-ins-line underline-offset-[3px]">
             {p.text}
           </ins>
         ),
@@ -35,8 +35,8 @@ function Text({ pieces, side }: { pieces: Piece[]; side: 'old' | 'new' }) {
 
 // The transcriber's column switches sides between comparisons, so it always gets the same
 // colour: a light blue background, and a darker blue header labelled "You".
-const MINE_HEAD = 'bg-[#DCE8FA] text-brand-dark';
-const MINE_CELL = 'bg-[#EEF3FC]';
+const MINE_HEAD = 'bg-tint text-brand-dark';
+const MINE_CELL = 'bg-tint-soft';
 
 /** One side of a row. Re-segmented rows draw each whole subtitle as its own numbered box. */
 function Side({ it, side, mark }: { it: ChangeItem; side: 'ref' | 'hyp'; mark: 'old' | 'new' }) {
@@ -48,7 +48,7 @@ function Side({ it, side, mark }: { it: ChangeItem; side: 'ref' | 'hyp'; mark: '
         {cues.length} subtitle{cues.length === 1 ? '' : 's'}
       </span>
       {cues.map((c, i) => (
-        <div key={i} className="flex gap-2.5 border border-field bg-white px-3 py-2 leading-snug">
+        <div key={i} className="flex gap-2.5 rounded-lg border border-field bg-white px-3 py-2 leading-snug">
           <span className="font-bold tabular-nums text-muted">{i + 1}</span>
           <span>{c}</span>
         </div>
@@ -78,7 +78,8 @@ export function ChangeTable({ mode, items, counts, title, oldLabel, newLabel, le
   const total = kinds.reduce((s, k) => s + counts[k], 0);
   const shown = useMemo(() => (filter === 'all' ? items : items.filter((i) => i.kinds.includes(filter))), [items, filter]);
 
-  const chip = (key: Kind | 'all', label: string, n: number, bg: string, fg: string) => {
+  // selected filter = solid teal with white text; the rest are plain white
+  const chip = (key: Kind | 'all', label: string, n: number) => {
     const on = filter === key;
     return (
       <button
@@ -88,8 +89,9 @@ export function ChangeTable({ mode, items, counts, title, oldLabel, newLabel, le
           setFilter(key);
           setLimit(PAGE);
         }}
-        className="min-h-9 rounded-full border-2 px-3.5 text-sm font-semibold"
-        style={on ? { background: bg, color: fg, borderColor: bg } : { background: '#FFFFFF', color: '#1F2433', borderColor: '#E1E4EC' }}
+        className={`min-h-9 rounded-full border-[1.5px] px-3.5 text-sm font-semibold ${
+          on ? 'border-brand bg-brand text-white' : 'border-line bg-white text-ink hover:border-field'
+        }`}
       >
         {label} {n.toLocaleString()}
       </button>
@@ -97,15 +99,15 @@ export function ChangeTable({ mode, items, counts, title, oldLabel, newLabel, le
   };
 
   return (
-    <section className="flex flex-col border border-line bg-white">
+    <section className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-white">
       <div className="flex flex-col gap-3.5 border-b border-line px-6 py-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-lg font-bold">{title}</h2>
           <span className="text-[13px] text-muted">Cleared when you leave or refresh this page</span>
         </div>
         <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-2">
-          {chip('all', 'All', total, '#1F2433', '#FFFFFF')}
-          {kinds.filter((k) => counts[k] > 0).map((k) => chip(k, KINDS[mode][k].label, counts[k], KINDS[mode][k].bg, KINDS[mode][k].fg))}
+          {chip('all', 'All', total)}
+          {kinds.filter((k) => counts[k] > 0).map((k) => chip(k, KINDS[mode][k].label, counts[k]))}
         </div>
       </div>
 
@@ -128,7 +130,7 @@ export function ChangeTable({ mode, items, counts, title, oldLabel, newLabel, le
             </thead>
             <tbody>
               {shown.slice(0, limit).map((it) => (
-                <tr key={it.id} className="border-t-2 border-line align-top">
+                <tr key={it.id} className="border-t border-line-soft align-top">
                   <td className="px-6 py-4 font-semibold tabular-nums text-muted">{it.line ?? '–'}</td>
                   <td className="px-4 py-4">
                     <span className="flex flex-wrap gap-1.5">

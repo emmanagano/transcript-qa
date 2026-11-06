@@ -63,20 +63,19 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
   };
 
   return (
-    <section aria-label={title} className="flex min-w-0 flex-[1_1_360px] flex-col border border-line bg-white">
-      <div className="h-1.5" style={{ background: barColor }} />
+    <section aria-label={title} className="flex min-w-0 flex-[1_1_360px] flex-col overflow-hidden rounded-[20px] border border-line bg-white">
       <div className="flex flex-col gap-4 px-6 py-5">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{title}</h2>
           {file ? (
-            <span className="rounded-full bg-accuracy px-3 py-1 text-[13px] font-semibold text-white">Added</span>
+            <span className="rounded-full bg-tint px-3 py-1 text-[13px] font-semibold text-brand-dark">Added</span>
           ) : (
-            <span className="rounded-full bg-line px-3 py-1 text-[13px] font-semibold text-ink">Needed</span>
+            <span className="rounded-full bg-chip px-3 py-1 text-[13px] font-semibold text-ink">Needed</span>
           )}
         </div>
 
         {file ? (
-          <div className="flex flex-col gap-3.5 border border-line bg-page p-4">
+          <div className="flex flex-col gap-3.5 rounded-xl border border-line bg-page p-4">
             <div className="flex items-center gap-3.5">
               <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={barColor} strokeWidth="1.8" className="shrink-0">
                 <path d="M14 3H6v18h12V7z" />
@@ -96,7 +95,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
                       if (e.key === 'Enter') saveRename();
                       if (e.key === 'Escape') setRenaming(false);
                     }}
-                    className="min-h-9 w-full border border-field bg-white px-2.5 text-[15px] font-semibold"
+                    className="min-h-9 w-full rounded-lg border border-field bg-white px-2.5 text-[15px] font-semibold"
                   />
                 ) : (
                   <span className="truncate text-[15px] font-semibold">{file.name}</span>
@@ -111,7 +110,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
                 type="button"
                 onMouseDown={(e) => renaming && e.preventDefault()}
                 onClick={renaming ? saveRename : startRename}
-                className="min-h-10 border border-brand bg-white px-4 text-sm font-bold text-brand hover:bg-[#EEF3FC]"
+                className="min-h-10 rounded-lg border-[1.5px] border-brand bg-white px-4 text-sm font-bold text-brand hover:bg-tint-soft"
               >
                 {renaming ? 'Save name' : 'Rename'}
               </button>
@@ -123,7 +122,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
                   onFile(null);
                   if (inputRef.current) inputRef.current.value = '';
                 }}
-                className="min-h-10 border border-field bg-white px-4 text-sm font-bold text-ink hover:bg-page"
+                className="min-h-10 rounded-lg border-[1.5px] border-field bg-white px-4 text-sm font-bold text-ink hover:bg-page"
               >
                 Remove
               </button>
@@ -138,11 +137,11 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
             }}
             onDragLeave={() => setOver(false)}
             onDrop={onDrop}
-            className={`flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2.5 border-2 border-dashed p-5 text-center ${
-              over ? 'border-brand bg-[#EEF3FC]' : 'border-[#A9AEBD] bg-[#FAFBFD] hover:border-brand'
+            className={`flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed p-5 text-center ${
+              over ? 'border-brand bg-tint-soft' : 'border-field bg-[#FBFCFB] hover:border-brand'
             }`}
           >
-            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F5FCC" strokeWidth="1.8">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.8">
               <path d="M12 16V4M7 9l5-5 5 5" />
               <path d="M4 16v4h16v-4" />
             </svg>
@@ -154,7 +153,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
         )}
         <input ref={inputRef} id={id} type="file" accept=".srt" className="sr-only" onChange={(e) => take(e.target.files?.[0])} />
         {error && (
-          <p role="alert" className="border border-[#C62F46] bg-del-bg px-4 py-3 text-sm text-del-fg">
+          <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">
             {error}
           </p>
         )}

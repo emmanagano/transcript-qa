@@ -87,7 +87,7 @@ export default function UploadPage() {
     <>
       <p className="text-muted">Files uploaded are not saved. Only the score is saved.</p>
 
-      <div role="tablist" aria-label="Comparison type" className="grid max-w-[760px] grid-cols-1 border border-field bg-white sm:grid-cols-2">
+      <div role="tablist" aria-label="Comparison type" className="grid max-w-[760px] grid-cols-1 gap-3 sm:grid-cols-2">
         {MODES.map((m) => {
           const on = m.mode === mode;
           return (
@@ -96,8 +96,7 @@ export default function UploadPage() {
               role="tab"
               aria-selected={on}
               onClick={() => pickMode(m.mode)}
-              className={`flex min-h-[80px] flex-col items-start gap-1 px-5 py-4 text-left ${on ? 'text-white' : 'bg-white text-muted hover:bg-page'}`}
-              style={on ? { background: MODE_COLOR[m.mode] } : { boxShadow: `inset 0 4px 0 ${MODE_COLOR[m.mode]}33` }}
+              className={`flex min-h-[80px] flex-col items-start gap-1 rounded-xl border-[1.5px] px-5 py-4 text-left ${on ? 'border-brand bg-brand text-white' : 'border-line bg-white text-muted hover:border-field'}`}
             >
               <span className={`text-base font-bold ${on ? '' : 'text-ink'}`}>{m.title}</span>
               <span className={`text-sm ${on ? 'text-white' : 'text-muted'}`}>{m.sub}</span>
@@ -107,7 +106,7 @@ export default function UploadPage() {
       </div>
 
       <div className="flex flex-wrap gap-6">
-        <DropZone title="My transcript" noun="transcript" barColor="#7B3FD1" file={mine} onFile={onMine} parse={parse} />
+        <DropZone title="My transcript" noun="transcript" barColor="#0F766E" file={mine} onFile={onMine} parse={parse} />
         <DropZone
           key={mode}
           title={current.refNoun}
@@ -122,7 +121,7 @@ export default function UploadPage() {
         />
       </div>
 
-      <div className="flex flex-wrap items-end gap-6 border border-line bg-white p-6">
+      <div className="flex flex-wrap items-end gap-6 rounded-[20px] border border-line bg-white p-6">
         <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-2">
           <label htmlFor="case" className="text-sm font-semibold">Case name</label>
           <input
@@ -130,19 +129,19 @@ export default function UploadPage() {
             value={caseName}
             onChange={(e) => setCaseName(e.target.value)}
             placeholder="Filled in from your file name"
-            className="h-12 border border-field bg-white px-3.5 text-base"
+            className="h-12 rounded-xl border border-field bg-white px-3.5 text-base"
           />
           <span className="text-[13px] text-muted">Filled in from your file name. Edit it if needed.</span>
         </div>
         {mode === 'effort' && (
           <div className="flex min-w-0 flex-[0_1_220px] flex-col gap-2">
             <label htmlFor="tool" className="text-sm font-semibold">AI tool</label>
-            <input id="tool" value={aiTool} onChange={(e) => setAiTool(e.target.value)} className="h-12 border border-field bg-white px-3.5 text-base" />
+            <input id="tool" value={aiTool} onChange={(e) => setAiTool(e.target.value)} className="h-12 rounded-xl border border-field bg-white px-3.5 text-base" />
             <span className="text-[13px] text-muted">The tool that made the template</span>
           </div>
         )}
         <div className="flex flex-col items-end gap-2">
-          <button onClick={run} disabled={!ready || busy} className={`${buttonPrimary} h-12 px-8 text-base`}>
+          <button onClick={run} disabled={!ready || busy} className={`${buttonPrimary} px-8 text-base`}>
             {busy ? 'Comparing…' : 'Compare'}
           </button>
           <span className="text-[13px] text-muted" aria-live="polite">
@@ -152,14 +151,14 @@ export default function UploadPage() {
       </div>
 
       {mismatch && (
-        <div role="alert" className="flex flex-col gap-3 border border-[#C2510F] bg-[#FDEEE4] p-5">
+        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#C2510F] bg-[#FDEEE4] p-5">
           <p className="font-bold">These two files might not belong together</p>
           <p className="text-[15px]">
             Your transcript has {mismatch.result.hypWords.toLocaleString()} words and the {current.refNoun} has{' '}
             {mismatch.result.refWords.toLocaleString()}. That usually means a wrong file, or only part of the case. Saving it would add a misleading score to your stats.
           </p>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setMismatch(null)} className="inline-flex h-11 items-center border border-ink bg-white px-5 font-bold">
+            <button onClick={() => setMismatch(null)} className="inline-flex h-12 items-center rounded-xl border-[1.5px] border-ink bg-white px-5 font-bold">
               Check the files
             </button>
             <button onClick={() => finish(mismatch.result)} className="inline-flex h-11 items-center px-3 font-semibold text-brand hover:text-brand-dark">

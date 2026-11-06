@@ -26,13 +26,13 @@ export function TopBar() {
   };
 
   return (
-    <header className="border-b border-line bg-white">
-      <nav aria-label="Main" className="mx-auto flex min-h-16 max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-6">
+    <header className="p-4">
+      <nav aria-label="Main" className="mx-auto flex min-h-16 max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-line bg-white px-5 py-2">
         <Link href="/upload" className="flex items-center gap-2.5 text-ink no-underline hover:text-ink">
           <LogoMark />
-          <span className="text-lg font-extrabold">TranscriptQA</span>
+          <span className="font-heading text-lg font-bold">TranscriptQA</span>
         </Link>
-        <div className="flex self-stretch">
+        <div className="flex gap-1">
           {NAV.map((n) => {
             const active = pathname.startsWith(n.href);
             return (
@@ -40,8 +40,8 @@ export function TopBar() {
                 key={n.href}
                 href={n.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex items-center border-b-[3px] px-4 text-[15px] no-underline ${
-                  active ? 'border-brand font-bold text-ink hover:text-ink' : 'border-transparent font-medium text-muted hover:text-ink'
+                className={`flex min-h-10 items-center rounded-xl px-4 text-[15px] no-underline ${
+                  active ? 'bg-tint font-bold text-brand-dark hover:text-brand-dark' : 'font-medium text-muted hover:bg-chip hover:text-ink'
                 }`}
               >
                 {n.label}
@@ -51,11 +51,11 @@ export function TopBar() {
         </div>
         <div className="ml-auto flex items-center gap-4">
           <span className="flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-senior text-[13px] font-bold text-white">
+            <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-tint text-[13px] font-bold text-brand-dark">
               {name.slice(0, 1).toUpperCase()}
             </span>
             {name}
-            {profile?.role === 'senior' && <span className="rounded-full bg-line px-2 py-0.5 text-xs font-semibold text-ink">Senior</span>}
+            {profile?.role === 'senior' && <span className="rounded-full bg-chip px-2 py-0.5 text-xs font-semibold text-ink">Senior</span>}
           </span>
           <button onClick={logOut} className="min-h-11 px-1 text-sm font-medium text-brand hover:text-brand-dark">
             Log out
