@@ -150,6 +150,40 @@ export default function ResultsPage() {
         aside={isAcc ? undefined : `AI template: ${r.refWords.toLocaleString()} words`}
       />
 
+      {r.skipped.length > 0 && (
+        <Card className="flex flex-col gap-4 p-6">
+          <h2 className="text-lg font-bold">Not counted against you</h2>
+          {(
+            [
+              ['qa', 'Added by the QA', 'in the QA version have nothing matching in your transcript, so they look like voiceover added later.'],
+              ['you', 'Cut from the video', 'in your transcript have nothing matching in the QA version, so they look like footage that was cut before QA.'],
+            ] as const
+          ).map(([side, title, why]) => {
+            const xs = r.skipped.filter((x) => x.side === side);
+            if (xs.length === 0) return null;
+            return (
+              <div key={side} className="flex flex-col gap-1.5">
+                <h3 className="font-bold">{title}</h3>
+                <p className="text-[15px] text-muted">
+                  {xs.length} subtitle{xs.length === 1 ? '' : 's'} ({lineRanges(xs.map((x) => x.n))}) {why}
+                </p>
+                <details className="text-[15px]">
+                  <summary className="cursor-pointer font-semibold text-brand">Show these lines</summary>
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {xs.map((x) => (
+                      <li key={x.n} className="flex gap-3">
+                        <span className="w-10 shrink-0 font-semibold tabular-nums text-muted">{x.n}</span>
+                        <span>{x.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </div>
+            );
+          })}
+        </Card>
+      )}
+
       <ChangeTable
         mode={mode}
         items={r.items}
@@ -161,4 +195,16 @@ export default function ResultsPage() {
       />
     </>
   );
+}
+
+/** [260,261,262,263,270] -> "260–263, 270" */
+function lineRanges(nums: number[]): string {
+  const out: string[] = [];
+  for (let i = 0; i < nums.length; i++) {
+    let j = i;
+    while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+    out.push(j > i ? `${nums[i]}–${nums[j]}` : String(nums[i]));
+    i = j;
+  }
+  return out.join(', ');
 }

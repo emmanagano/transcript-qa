@@ -22,6 +22,10 @@ if (r.transcriber) console.log(`Transcriber: ${r.transcriber}`);
 if (mode === 'accuracy') console.log(`Accuracy: ${(r.accuracy * 100).toFixed(1)}%  (${r.totalErrors} errors / ${r.refWords} QA words)`);
 else console.log(`Changes: ${r.totalChanges}  (${(r.changedShare * 100).toFixed(1)}% of ${r.refWords} AI words)`);
 console.log('Counts:', r.counts);
+for (const side of ['qa', 'you'] as const) {
+  const xs = r.skipped.filter((x) => x.side === side);
+  if (xs.length) console.log(`Skipped (${side === 'qa' ? 'voiceover in QA' : 'cut from video'}): ${xs.length} subtitles, first: ${xs.slice(0, 12).map((x) => x.n).join(', ')}`);
+}
 console.log(`\nFirst 15 of ${r.items.length} changes:`);
 for (const it of r.items.slice(0, 15)) {
   const fmt = (ps: typeof it.ref) => ps.map((p) => (p.changed ? `[${p.text}]` : p.text)).join('');

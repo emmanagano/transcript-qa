@@ -77,6 +77,11 @@ export interface CompareResult {
   linesAdded: number;
   linesRemoved: number;
   items: ChangeItem[];
+  /**
+   * Whole subtitles with no counterpart in the other file, left out of the score because nobody corrected them:
+   * side 'qa' = narration the QA's editor added, side 'you' = footage the editor cut before QA.
+   */
+  skipped: { side: 'qa' | 'you'; n: number; text: string }[];
 }
 
 export const TIMESTAMP_THRESHOLD_MS = 250;
@@ -410,11 +415,63 @@ export function formatTime(ms: number): string {
   return `${p(h)}:${p(m)}:${p(s)},${p(r, 3)}`;
 }
 
+/** A run of this many whole subtitles with nothing matching in the other file is left out of the score. */
+export const SKIP_MIN_RUN = 3;
+
+/**
+ * If more than this share of a file's subtitles would be skipped, it is probably the wrong file or only part of
+ * the case, not a few cuts or voiceovers. Nothing is skipped then, so the "might not belong together" warning still fires.
+ */
+export const SKIP_MAX_SHARE = 0.25;
+
+/** Indices that sit in runs of >= SKIP_MIN_RUN consecutive flagged cues. */
+function longRuns(flags: boolean[]): Set<number> {
+  const out = new Set<number>();
+  let run: number[] = [];
+  const end = () => {
+    if (run.length >= SKIP_MIN_RUN) run.forEach((i) => out.add(i));
+    run = [];
+  };
+  flags.forEach((f, i) => (f ? run.push(i) : end()));
+  end();
+  return out;
+}
+
 export function compare(refText: string, hypText: string, mode: Mode): CompareResult {
   const ref = stripCredits(parseSrt(refText));
   const hyp = stripCredits(parseSrt(hypText));
-  const refCues = ref.cues;
-  const hypCues = hyp.cues;
+  const first = analyze(ref.cues, hyp.cues, hyp.name, mode);
+  if (mode !== 'accuracy') return first.result;
+
+  // Nobody corrects a whole line that has no partner in the other file, so it is not an error:
+  //  - QA side: narration the QA's video editor added (formatted like dialogue, so found by shape: not a "- " line)
+  //  - transcriber side: footage the editor cut from the video, and its subtitles, before QA
+  // Only runs of SKIP_MIN_RUN+ lines count, so a single line the QA deleted or the transcriber forgot still does.
+  const isDialogue = (c: Cue) => c.lines.some((l) => /^[-–—]\s/.test(l));
+  const capped = (drop: Set<number>, total: number) => (drop.size > total * SKIP_MAX_SHARE ? new Set<number>() : drop);
+  const dropQa = capped(longRuns(ref.cues.map((c, i) => first.wholeMissed[i] && !isDialogue(c))), ref.cues.length);
+  const dropYou = capped(longRuns(hyp.cues.map((_, i) => first.wholeExtra[i])), hyp.cues.length);
+  if (dropQa.size === 0 && dropYou.size === 0) return first.result;
+
+  const result = analyze(
+    ref.cues.filter((_, i) => !dropQa.has(i)),
+    hyp.cues.filter((_, i) => !dropYou.has(i)),
+    hyp.name,
+    mode,
+  ).result;
+  result.skipped = [
+    ...ref.cues.flatMap((c, i) => (dropQa.has(i) ? [{ side: 'qa' as const, n: c.n, text: c.lines.join(' ') }] : [])),
+    ...hyp.cues.flatMap((c, i) => (dropYou.has(i) ? [{ side: 'you' as const, n: c.n, text: c.lines.join(' ') }] : [])),
+  ];
+  return result;
+}
+
+function analyze(
+  refCues: Cue[],
+  hypCues: Cue[],
+  hypName: string | null,
+  mode: Mode,
+): { result: CompareResult; wholeMissed: boolean[]; wholeExtra: boolean[] } {
   const R = tokenize(refCues);
   const H = tokenize(hypCues);
 
@@ -620,9 +677,11 @@ export function compare(refText: string, hypText: string, mode: Mode): CompareRe
   const formatErrors = counts.punct + counts.caps + counts.dash;
   const totalErrors = wordErrors + formatErrors;
   const refWords = R.length;
-  return {
+  const wholeMissed = refToHyp.map((set, i) => set.size === 0 && refByCue[i].length > 0);
+  const wholeExtra = hypToRef.map((set, i) => set.size === 0 && hypByCue[i].length > 0);
+  const result: CompareResult = {
     mode,
-    transcriber: hyp.name,
+    transcriber: hypName,
     refWords,
     hypWords: H.length,
     refLines: refCues.length,
@@ -638,7 +697,9 @@ export function compare(refText: string, hypText: string, mode: Mode): CompareRe
     linesAdded,
     linesRemoved,
     items,
+    skipped: [],
   };
+  return { result, wholeMissed, wholeExtra };
 }
 
 function mergePieces(pieces: Piece[]): Piece[] {

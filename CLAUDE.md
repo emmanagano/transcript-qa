@@ -14,6 +14,14 @@ Fix them without changing the decisions below unless Emma asks.
   only because a line break moved, dialog dashes when the two subtitles have different line counts (Accuracy only;
   in Effort, splitting the AI's run-together dialog into "- " lines counts as a dash change), credit lines
   ("Transcribed by Name", "*Name*").
+- SRT cleaning (parseSrt): colour/format tags (`<b><font color='…'>`, `{\an8}`, entities) are stripped, and `[Cut]`
+  lines (added by the video editor) are dropped, so neither can count as an error.
+- Uncorrected lines (Accuracy only): a whole subtitle with no partner in the other file is not a correction, so it is
+  left out. QA side = narration the QA's editor added (formatted like dialogue, so found by shape: not a "- " line).
+  Transcriber side = footage the editor cut before QA (no [Cut] marker in practice). Only runs of ≥ SKIP_MIN_RUN (3)
+  count, so one line the QA deleted or the transcriber forgot still counts. If more than SKIP_MAX_SHARE (25%) of a
+  file's subtitles would be skipped, nothing is skipped (wrong file / partial case; keeps the mismatch warning working).
+  Skipped lines are listed on Results ("Not counted against you"). Words in them leave both the errors and the totals.
 - Effort also counts re-segmented lines and timestamps moved ≥ 0.25 s (TIMESTAMP_THRESHOLD_MS).
 - Matching is word-level across the whole file (Myers diff + per-region alignment), never line-by-line or by timestamp.
 - Test without the UI: `npm run test:engine -- ref.srt mine.srt [accuracy|effort]`. Sample files: ../testers
