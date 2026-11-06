@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+
+  --color-ink: #1f2433;
+  --color-muted: #5a6072;
+  --color-page: #f5f6fa;
+  --color-line: #e1e4ec;
+  --color-field: #c3c7d3;
+  --color-brand: #1f5fcc;
+  --color-brand-dark: #16479c;
+  --color-accuracy: #2e8b57;
+  --color-effort: #1f6fd1;
+  --color-senior: #7b3fd1;
+  --color-del-bg: #fde2e6;
+  --color-del-fg: #8e1428;
+  --color-ins-bg: #dff3e6;
+  --color-ins-fg: #0f5a31;
+
+  /* sharp corners everywhere; pills opt in with rounded-full */
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* in @layer base so Tailwind utilities (text-white on buttons, etc.) can override link colors */
+@layer base {
+  a {
+    color: var(--color-brand);
+  }
+  a:hover {
+    color: var(--color-brand-dark);
+  }
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
+}

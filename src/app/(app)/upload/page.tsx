@@ -1,0 +1,173 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { useCompare, type OpenComparison } from '@/lib/compare-store';
+import { caseNameFromFile, compare, parseSrt, stripCredits, tokenize, type CompareResult, type Mode } from '@/lib/compare/engine';
+import { saveResult } from '@/lib/results-db';
+import { MODE_COLOR } from '@/lib/kinds';
+import { DropZone, type LoadedFile } from '@/components/DropZone';
+import { buttonPrimary } from '@/components/ui';
+
+const MODES: Array<{ mode: Mode; title: string; sub: string; refNoun: string }> = [
+  { mode: 'accuracy', title: 'Accuracy · You vs QA', sub: 'How correct your transcript was', refNoun: 'QA version' },
+  { mode: 'effort', title: 'Effort · You vs AI', sub: 'How much you fixed the AI’s draft', refNoun: 'AI template' },
+];
+
+const parse = (text: string) => {
+  const cues = stripCredits(parseSrt(text)).cues;
+  return { lines: cues.length, words: tokenize(cues).length };
+};
+
+export default function UploadPage() {
+  const router = useRouter();
+  const { session } = useAuth();
+  const { setCurrent, lastMode, setLastMode } = useCompare();
+  const [mode, setMode] = useState<Mode>(lastMode);
+  const [mine, setMine] = useState<LoadedFile | null>(null);
+  // keep each mode's reference file separately so switching tabs doesn't lose it
+  const [refs, setRefs] = useState<Record<Mode, LoadedFile | null>>({ accuracy: null, effort: null });
+  const [caseName, setCaseName] = useState('');
+  const [aiTool, setAiTool] = useState('ElevenLabs');
+  const [busy, setBusy] = useState(false);
+  const [mismatch, setMismatch] = useState<{ result: CompareResult; ratio: number } | null>(null);
+
+  const current = MODES.find((m) => m.mode === mode)!;
+  const ref = refs[mode];
+  const ready = !!mine && !!ref && caseName.trim().length > 0 && (mode === 'accuracy' || aiTool.trim().length > 0);
+
+  const pickMode = (m: Mode) => {
+    setMode(m);
+    setLastMode(m);
+  };
+
+  const onMine = (f: LoadedFile | null) => {
+    setMine(f);
+    setMismatch(null);
+    if (f) setCaseName(caseNameFromFile(f.name));
+  };
+
+  const run = async () => {
+    if (!mine || !ref || !session) return;
+    setBusy(true);
+    setMismatch(null);
+    // let the button show its busy state before the (fast, but synchronous) comparison runs
+    await new Promise((r) => setTimeout(r, 20));
+    const result = compare(ref.text, mine.text, mode);
+    // very different lengths usually means the wrong file or only part of the case
+    const ratio = result.refWords ? result.hypWords / result.refWords : 1;
+    if (ratio < 0.6 || ratio > 1.67) {
+      setMismatch({ result, ratio });
+      setBusy(false);
+      return;
+    }
+    await finish(result);
+  };
+
+  const finish = async (result: CompareResult) => {
+    if (!session) return;
+    setBusy(true);
+    const open: OpenComparison = {
+      mode,
+      caseName: caseName.trim(),
+      aiTool: mode === 'effort' ? aiTool.trim() : null,
+      result,
+      savedAt: null,
+      saveError: null,
+    };
+    const saved = await saveResult(open, session.user.id);
+    setCurrent({ ...open, savedAt: saved.createdAt, saveError: saved.error });
+    router.push('/results');
+  };
+
+  const missing = !mine ? 'your transcript' : !ref ? `the ${current.refNoun}` : !caseName.trim() ? 'a case name' : 'the AI tool name';
+
+  return (
+    <>
+      <p className="text-muted">Files uploaded are not saved. Only the score is saved.</p>
+
+      <div role="tablist" aria-label="Comparison type" className="grid max-w-[760px] grid-cols-1 border border-field bg-white sm:grid-cols-2">
+        {MODES.map((m) => {
+          const on = m.mode === mode;
+          return (
+            <button
+              key={m.mode}
+              role="tab"
+              aria-selected={on}
+              onClick={() => pickMode(m.mode)}
+              className={`flex min-h-[80px] flex-col items-start gap-1 px-5 py-4 text-left ${on ? 'text-white' : 'bg-white text-muted hover:bg-page'}`}
+              style={on ? { background: MODE_COLOR[m.mode] } : { boxShadow: `inset 0 4px 0 ${MODE_COLOR[m.mode]}33` }}
+            >
+              <span className={`text-base font-bold ${on ? '' : 'text-ink'}`}>{m.title}</span>
+              <span className={`text-sm ${on ? 'text-white' : 'text-muted'}`}>{m.sub}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-6">
+        <DropZone title="My transcript" noun="transcript" barColor="#7B3FD1" file={mine} onFile={onMine} parse={parse} />
+        <DropZone
+          key={mode}
+          title={current.refNoun}
+          noun={current.refNoun}
+          barColor={MODE_COLOR[mode]}
+          file={ref}
+          onFile={(f) => {
+            setRefs((r) => ({ ...r, [mode]: f }));
+            setMismatch(null);
+          }}
+          parse={parse}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-end gap-6 border border-line bg-white p-6">
+        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-2">
+          <label htmlFor="case" className="text-sm font-semibold">Case name</label>
+          <input
+            id="case"
+            value={caseName}
+            onChange={(e) => setCaseName(e.target.value)}
+            placeholder="Filled in from your file name"
+            className="h-12 border border-field bg-white px-3.5 text-base"
+          />
+          <span className="text-[13px] text-muted">Filled in from your file name. Edit it if needed.</span>
+        </div>
+        {mode === 'effort' && (
+          <div className="flex min-w-0 flex-[0_1_220px] flex-col gap-2">
+            <label htmlFor="tool" className="text-sm font-semibold">AI tool</label>
+            <input id="tool" value={aiTool} onChange={(e) => setAiTool(e.target.value)} className="h-12 border border-field bg-white px-3.5 text-base" />
+            <span className="text-[13px] text-muted">The tool that made the template</span>
+          </div>
+        )}
+        <div className="flex flex-col items-end gap-2">
+          <button onClick={run} disabled={!ready || busy} className={`${buttonPrimary} h-12 px-8 text-base`}>
+            {busy ? 'Comparing…' : 'Compare'}
+          </button>
+          <span className="text-[13px] text-muted" aria-live="polite">
+            {ready ? 'Ready when you are' : `Add ${missing} to continue`}
+          </span>
+        </div>
+      </div>
+
+      {mismatch && (
+        <div role="alert" className="flex flex-col gap-3 border border-[#C2510F] bg-[#FDEEE4] p-5">
+          <p className="font-bold">These two files might not belong together</p>
+          <p className="text-[15px]">
+            Your transcript has {mismatch.result.hypWords.toLocaleString()} words and the {current.refNoun} has{' '}
+            {mismatch.result.refWords.toLocaleString()}. That usually means a wrong file, or only part of the case. Saving it would add a misleading score to your stats.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={() => setMismatch(null)} className="inline-flex h-11 items-center border border-ink bg-white px-5 font-bold">
+              Check the files
+            </button>
+            <button onClick={() => finish(mismatch.result)} className="inline-flex h-11 items-center px-3 font-semibold text-brand hover:text-brand-dark">
+              Compare and save anyway
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
