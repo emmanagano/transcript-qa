@@ -545,8 +545,9 @@ function analyze(
   // ---- word / formatting changes, grouped into contiguous regions
   const regions: number[][] = [];
   let curRegion: number[] | null = null;
-  // a long run of missed or extra words is split at line boundaries, one row per line
-  const pureCue = (o: Op) => (o.h < 0 && o.r >= 0 ? 'r' + R[o.r].cue : o.r < 0 && o.h >= 0 ? 'h' + H[o.h].cue : null);
+  // a run of only missed words (or only extra words) is one row, even across several lines, so the other
+  // side's neighbouring line is shown once instead of repeated next to every line. It splits when the kind flips.
+  const pureCue = (o: Op) => (o.h < 0 && o.r >= 0 ? 'r' : o.r < 0 && o.h >= 0 ? 'h' : null);
   ops.forEach((o, idx) => {
     if (!o.errs.length) {
       curRegion = null;
