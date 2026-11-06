@@ -89,6 +89,19 @@ const TS =
 const toMs = (h: string, m: string, s: string, ms: string) =>
   ((+h * 60 + +m) * 60 + +s) * 1000 + +ms.padEnd(3, '0');
 
+// Formatting that is not spoken text: <font color='...'>, <b>, <i>, <u>, WebVTT <c.yellow>, {\an8} / {\c&HFFFF&}
+// position and colour codes, and HTML entities. Removed so it can never count as an error.
+// Only real-looking tags are removed, so "(Unintelligible)" and a stray "<" in normal text are untouched.
+const MARKUP = /<\/?[a-z][a-z0-9._:-]*(?:\s[^>]*)?>|\{\\[^}]*\}/gi;
+const ENTITIES: Record<string, string> = { '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" };
+
+export function stripMarkup(line: string): string {
+  return line
+    .replace(MARKUP, '')
+    .replace(/&(?:nbsp|amp|lt|gt|quot|apos);/gi, (e) => ENTITIES[e.toLowerCase()])
+    .replace(/\s{2,}/g, ' ');
+}
+
 export function parseSrt(text: string): Cue[] {
   const lines = String(text).replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n');
   const cues: Cue[] = [];
@@ -107,8 +120,10 @@ export function parseSrt(text: string): Cue[] {
       cues.push(cur);
       continue;
     }
-    if (!cur || line.trim() === '') continue;
-    cur.lines.push(line.trim());
+    if (!cur) continue;
+    const clean = stripMarkup(line).trim();
+    if (clean === '') continue;
+    cur.lines.push(clean);
   }
   return dropCutMarkers(cues).filter((c) => c.lines.length > 0);
 }
@@ -509,9 +524,9 @@ export function compare(refText: string, hypText: string, mode: Mode): CompareRe
       const cues = Array.from(new Set(inRegion.map((t) => toks[t].cue))).sort((a, b) => a - b);
       const pieces: Piece[] = [];
       cues.forEach((c, ci) => {
-        if (ci > 0) pieces.push({ text: ' / ', changed: false });
+        if (ci > 0) pieces.push({ text: '\n', changed: false });
         byCue[c].forEach((ti, k) => {
-          if (k > 0) pieces.push({ text: toks[ti].lineStart ? ' / ' : ' ', changed: false });
+          if (k > 0) pieces.push({ text: toks[ti].lineStart ? '\n' : ' ', changed: false });
           pieces.push({ text: (toks[ti].dash ? '- ' : '') + toks[ti].raw, changed: changed.has(ti) });
         });
       });
@@ -540,7 +555,7 @@ export function compare(refText: string, hypText: string, mode: Mode): CompareRe
     const c = toks[pivot].cue;
     const pieces: Piece[] = [];
     byCue[c].forEach((ti, k) => {
-      if (k > 0) pieces.push({ text: toks[ti].lineStart ? ' / ' : ' ', changed: false });
+      if (k > 0) pieces.push({ text: toks[ti].lineStart ? '\n' : ' ', changed: false });
       if (before && ti === pivot) pieces.push({ text: '‸', changed: true, caret: true }, { text: ' ', changed: false });
       pieces.push({ text: (toks[ti].dash ? '- ' : '') + toks[ti].raw, changed: false });
       if (!before && ti === pivot) pieces.push({ text: ' ', changed: false }, { text: '‸', changed: true, caret: true });
@@ -564,7 +579,7 @@ export function compare(refText: string, hypText: string, mode: Mode): CompareRe
 
   // ---- effort only: re-segmented lines and adjusted timestamps
   if (mode === 'effort') {
-    const plain = (cue: Cue): Piece[] => [{ text: cue.lines.join(' / '), changed: false }];
+    const plain = (cue: Cue): Piece[] => [{ text: cue.lines.join('\n'), changed: false }];
     hypCues.forEach((hc, hi) => {
       const refs = hypToRef[hi];
       if (refs.size === 0) return; // a wholly new line: already counted as added words
