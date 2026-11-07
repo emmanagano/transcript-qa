@@ -23,8 +23,10 @@ src/
   app/(app)/upload        screen 1: pick Accuracy or Effort, add files
   app/(app)/results       screen 2: score, breakdown, list of changes
   app/(app)/stats         screen 3: my stats + team board
+  app/(app)/account       edit name, change password, delete own scores (opened from the name in the top bar)
 supabase/schema.sql       tables and access rules
 scripts/test-engine.ts    try the engine from the terminal
+testers/                  real sample SRTs for testing (gitignored: sensitive, never commit)
 ```
 
 ## Setup
@@ -65,9 +67,22 @@ npm run dev                        # http://localhost:3000
 | Compares | your SRT vs the QA's | the AI template vs your SRT |
 | Headline | 1 − errors ÷ QA words, graded A–F | total changes, % of AI words changed |
 | Counted | wrong, missed, extra words, punctuation, capitalization, dialog dashes | the same, plus re-segmented lines and timestamps moved 0.25 s or more |
-| Not counted | timestamps, line breaks, commas that move with a line break, credit lines | credit lines |
+| Not counted | timestamps, line breaks, commas that move with a line break, credit lines, colour/format tags, `[Cut]` lines, runs of 3+ whole subtitles with no match (QA voiceover, footage cut before QA) | credit lines, colour/format tags, `[Cut]` lines |
 
 Grades: A 90–100%, B 80–89.9%, C 70–79.9%, D 60–69.9%, F below 60%.
+
+### Reading the list of changes (Results)
+
+- Each row shows the whole subtitle(s) around a change; only the changed words are highlighted
+  (red strike-through = removed, green underline = added/corrected).
+- Changes that fall in the same subtitle share one row, so a subtitle never appears twice.
+- When one side has no words at all (only extra or only missed words), that side's cell is left empty.
+
+## Account page
+
+Click your name in the top bar. You can change your name (shown on the team stats), change your password (your
+current password is checked first), and **Reset my data**: delete your saved scores (all, Accuracy only, or Effort
+only). It shows how many will be deleted and needs `DELETE` typed to confirm. Only your own scores can be deleted.
 
 ## Try the engine without the website
 

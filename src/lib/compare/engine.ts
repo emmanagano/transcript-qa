@@ -43,7 +43,6 @@ export interface Op {
 export interface Piece {
   text: string;
   changed: boolean;
-  caret?: boolean; // marks where a word is missing
 }
 
 export interface ChangeItem {
@@ -607,36 +606,9 @@ function analyze(
       });
       return { pieces: mergePieces(pieces), cue: cues[0] };
     }
-    // nothing on this side: show the neighbouring line with a caret where words are missing
-    const last = regionOps[regionOps.length - 1];
-    let pivot = -1;
-    let before = true;
-    for (let i = last + 1; i < ops.length; i++) {
-      if (ops[i][side] >= 0) {
-        pivot = ops[i][side];
-        break;
-      }
-    }
-    if (pivot < 0) {
-      before = false;
-      for (let i = regionOps[0] - 1; i >= 0; i--) {
-        if (ops[i][side] >= 0) {
-          pivot = ops[i][side];
-          break;
-        }
-      }
-    }
-    if (pivot < 0) return { pieces: [{ text: '‸', changed: true, caret: true }], cue: null };
-    const c = toks[pivot].cue;
-    const pieces: Piece[] = [];
-    byCue[c].forEach((ti, k) => {
-      if (k > 0) pieces.push({ text: toks[ti].lineStart ? '\n' : ' ', changed: false });
-      if (before && ti === pivot) pieces.push({ text: '‸', changed: true, caret: true }, { text: ' ', changed: false });
-      pieces.push({ text: (toks[ti].dash ? '- ' : '') + toks[ti].raw, changed: false });
-      if (!before && ti === pivot) pieces.push({ text: ' ', changed: false }, { text: '‸', changed: true, caret: true });
-    });
-    // the line containing the pivot only borders the gap; the gap itself belongs to no line
-    return { pieces: mergePieces(pieces), cue: null };
+    // nothing on this side (only added or only missing words): leave the cell empty,
+    // so the reader focuses on the words that are there
+    return { pieces: [], cue: null };
   };
 
   for (const rg of rows) {
@@ -726,11 +698,8 @@ function mergePieces(pieces: Piece[]): Piece[] {
     if (!p.text) continue;
     const last = out[out.length - 1];
     const prev = out[out.length - 2];
-    if (last && !p.caret && !last.caret && last.changed === p.changed) last.text += p.text;
-    else if (
-      p.changed && !p.caret && last && !last.changed && last.text === ' ' &&
-      prev && prev.changed && !prev.caret
-    ) {
+    if (last && last.changed === p.changed) last.text += p.text;
+    else if (p.changed && last && !last.changed && last.text === ' ' && prev && prev.changed) {
       // "changed changed" separated by a single space reads as one highlighted phrase
       out.pop();
       prev.text += ' ' + p.text;

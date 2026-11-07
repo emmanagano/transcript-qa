@@ -10,9 +10,9 @@ import { MODE_COLOR } from '@/lib/kinds';
 import { DropZone, type LoadedFile } from '@/components/DropZone';
 import { buttonPrimary } from '@/components/ui';
 
-const MODES: Array<{ mode: Mode; title: string; sub: string; refNoun: string }> = [
-  { mode: 'accuracy', title: 'Accuracy · You vs QA', sub: 'How correct your transcript was', refNoun: 'QA version' },
-  { mode: 'effort', title: 'Effort · You vs AI', sub: 'How much you fixed the AI’s draft', refNoun: 'AI template' },
+const MODES: Array<{ mode: Mode; title: string; refNoun: string }> = [
+  { mode: 'accuracy', title: 'Accuracy · You vs QA', refNoun: 'QA version' },
+  { mode: 'effort', title: 'Effort · You vs AI', refNoun: 'AI template' },
 ];
 
 const parse = (text: string) => {
@@ -81,8 +81,6 @@ export default function UploadPage() {
     router.push('/results');
   };
 
-  const missing = !mine ? 'your transcript' : !ref ? `the ${current.refNoun}` : !caseName.trim() ? 'a case name' : 'the AI tool name';
-
   return (
     <>
       <p className="text-muted">Files uploaded are not saved. Only the score is saved.</p>
@@ -96,10 +94,9 @@ export default function UploadPage() {
               role="tab"
               aria-selected={on}
               onClick={() => pickMode(m.mode)}
-              className={`flex min-h-[80px] flex-col items-start gap-1 rounded-xl border-[1.5px] px-5 py-4 text-left ${on ? 'border-brand bg-brand text-white' : 'border-line bg-white text-muted hover:border-field'}`}
+              className={`flex min-h-16 items-center rounded-xl border-[1.5px] px-5 py-4 text-left ${on ? 'border-brand bg-brand text-white' : 'border-line bg-white text-ink hover:border-field'}`}
             >
-              <span className={`text-base font-bold ${on ? '' : 'text-ink'}`}>{m.title}</span>
-              <span className={`text-sm ${on ? 'text-white' : 'text-muted'}`}>{m.sub}</span>
+              <span className="text-base font-bold">{m.title}</span>
             </button>
           );
         })}
@@ -131,23 +128,16 @@ export default function UploadPage() {
             placeholder="Filled in from your file name"
             className="h-12 rounded-xl border border-field bg-white px-3.5 text-base"
           />
-          <span className="text-[13px] text-muted">Filled in from your file name. Edit it if needed.</span>
         </div>
         {mode === 'effort' && (
           <div className="flex min-w-0 flex-[0_1_220px] flex-col gap-2">
             <label htmlFor="tool" className="text-sm font-semibold">AI tool</label>
             <input id="tool" value={aiTool} onChange={(e) => setAiTool(e.target.value)} className="h-12 rounded-xl border border-field bg-white px-3.5 text-base" />
-            <span className="text-[13px] text-muted">The tool that made the template</span>
           </div>
         )}
-        <div className="flex flex-col items-end gap-2">
-          <button onClick={run} disabled={!ready || busy} className={`${buttonPrimary} px-8 text-base`}>
-            {busy ? 'Comparing…' : 'Compare'}
-          </button>
-          <span className="text-[13px] text-muted" aria-live="polite">
-            {ready ? 'Ready when you are' : `Add ${missing} to continue`}
-          </span>
-        </div>
+        <button onClick={run} disabled={!ready || busy} className={`${buttonPrimary} px-8 text-base`}>
+          {busy ? 'Comparing…' : 'Compare'}
+        </button>
       </div>
 
       {mismatch && (

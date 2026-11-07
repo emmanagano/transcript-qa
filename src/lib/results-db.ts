@@ -1,5 +1,6 @@
 import { supabase, type ResultRow } from './supabase';
 import type { OpenComparison } from './compare-store';
+import type { Mode } from './compare/engine';
 
 /** Saves only numbers: the score, word count and counts per change type. */
 export async function saveResult(c: OpenComparison, userId: string): Promise<{ error: string | null; createdAt: string | null }> {
@@ -45,6 +46,18 @@ export async function deleteResult(id: number): Promise<string | null> {
   const { data, error } = await supabase.from('results').delete().eq('id', id).select('id');
   if (error) return error.message;
   return data && data.length > 0 ? null : NEEDS_SQL;
+}
+
+/**
+ * Deletes all of your own results, or only one kind. Filters on user_id as well as relying on RLS,
+ * so it can never reach anyone else's scores.
+ */
+export async function deleteMyResults(userId: string, kind: Mode | 'all'): Promise<{ deleted: number; error: string | null }> {
+  let q = supabase.from('results').delete().eq('user_id', userId);
+  if (kind !== 'all') q = q.eq('kind', kind);
+  const { data, error } = await q.select('id');
+  if (error) return { deleted: 0, error: error.message };
+  return { deleted: data?.length ?? 0, error: null };
 }
 
 /** Renames the case on one of your own results (the only editable field). */

@@ -24,6 +24,12 @@ Fix them without changing the decisions below unless Emma asks.
   Skipped lines are listed on Results ("Not counted against you"). Words in them leave both the errors and the totals.
 - Effort also counts re-segmented lines and timestamps moved ≥ 0.25 s (TIMESTAMP_THRESHOLD_MS).
 - Matching is word-level across the whole file (Myers diff + per-region alignment), never line-by-line or by timestamp.
+- Change table rows (display only, never affects scores): changes in the same subtitle are merged into one row (matched
+  words between them join the row unhighlighted); a side with no words (only extra / only missed) is left EMPTY —
+  no "nothing here" marker and no neighbouring context line (Emma's call, Nov 2026: focus on reading the mistakes).
+- Real test cases: ./testers (inside the repo, gitignored, sensitive — never commit or print their text). Accuracy
+  pairs: "<Name> v2.srt" = QA version, "Transcript-<Name>.srt" = transcriber. "*_Line_Breaks.srt" = real AI templates
+  (Effort). On 9 real cases accuracy ranged 96.3–98.3%, so the current A ≥ 90 scale gives everyone an A (open question).
 - Test without the UI: `npm run test:engine -- ref.srt mine.srt [accuracy|effort]`. Sample files: ../testers
   (old example: "Helicia v2.srt" is the QA version of the whole case; the "Transcript-Halecia (Nth half)" files are parts,
   so whole-vs-half scores are low by design). "Transcript-Halecia (merged).srt" = the six halves joined with timestamps
@@ -45,11 +51,18 @@ Results/mistakes live in memory (src/lib/compare-store.tsx) and disappear on ref
 Login → Upload → Results → Stats. Top bar (Upload, Stats, name, Log out) on every screen after login.
 Results has "Compare another" and "View stats". Stats has Accuracy / Effort tabs, "My stats" (or the selected
 transcriber's), a trend line, and a team board grouped by transcriber with colored header bars.
+Account (/account, opened from the name in the top bar): edit name, change password (current password checked first via
+signInWithPassword), and "Reset my data" = delete own scores (All / Accuracy / Effort, type DELETE to confirm).
 
 ## Design — "Teal & gold" (redesign, Nov 2026; replaces the earlier sharp-cornered monday.com look)
 Reference mockup: "Direction E · Teal & gold" on the "Transcript QA App — Screens" design canvas (Results screen).
-Apply it to every screen (Login, Set password, Upload, Results, Stats). Layout, flow and copy stay as they are;
-this is a visual restyle. Desktop-first, light mode only. "TranscriptQA" is still a placeholder name.
+Apply it to every screen (Login, Set password, Upload, Results, Stats, Account). Desktop-first, light mode only for now.
+"TranscriptQA" is still a placeholder name. Upload has no helper/sub-text (removed Nov 2026); the AI tool defaults to
+ElevenLabs. The top-bar name is an outlined pill with a gear icon linking to /account.
+
+Planned (not started): switchable themes (e.g. dark mode). First move the ~40 hard-coded hex colours (kinds.ts,
+grades.ts, TrendChart.tsx, a few pages) into @theme tokens, then define each theme as token values under
+`[data-theme]`; picker on the Account page. Decide with Emma: which themes, and save in browser vs profile column.
 
 ### Color roles (each color has ONE job — don't reuse a color outside its role)
 | Token | Hex | Job |

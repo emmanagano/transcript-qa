@@ -13,12 +13,6 @@ function Text({ pieces, side }: { pieces: Piece[]; side: 'old' | 'new' }) {
       {pieces.map((p, i) =>
         !p.changed ? (
           <span key={i}>{p.text}</span>
-        ) : p.caret ? (
-          // this side has nothing where the other side has words: mark the gap, so the neighbouring line
-          // shown for context isn't mistaken for a replacement
-          <span key={i} className="rounded-[5px] border border-dashed border-muted px-1.5 py-px text-[13px] italic text-muted">
-            nothing here
-          </span>
         ) : side === 'old' ? (
           <del key={i} className="rounded-[5px] bg-del-bg px-[3px] py-px text-del-fg">
             {p.text}
