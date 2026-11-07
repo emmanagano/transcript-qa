@@ -565,6 +565,20 @@ function analyze(
     curRegion.push(idx);
   });
 
+  // two changes inside the same subtitle would show that subtitle twice, so they become one row.
+  // The matched words between them join the row, but are not highlighted (see `changed` below).
+  const cuesOf = (rg: number[], side: 'r' | 'h', toks: Tok[]) =>
+    new Set(rg.map((i) => ops[i][side]).filter((t) => t >= 0).map((t) => toks[t].cue));
+  const shareCue = (a: Set<number>, b: Set<number>) => Array.from(a).some((c) => b.has(c));
+  const rows: number[][] = [];
+  for (const rg of regions) {
+    const prev = rows[rows.length - 1];
+    if (prev && (shareCue(cuesOf(prev, 'r', R), cuesOf(rg, 'r', R)) || shareCue(cuesOf(prev, 'h', H), cuesOf(rg, 'h', H)))) {
+      for (let i = prev[prev.length - 1] + 1; i < rg[0]; i++) prev.push(i);
+      prev.push(...rg);
+    } else rows.push([...rg]);
+  }
+
   const sidePieces = (
     regionOps: number[],
     side: 'r' | 'h',
@@ -576,8 +590,9 @@ function analyze(
     for (const i of regionOps) {
       const o = ops[i];
       const ti = o[side];
-      if (ti < 0) continue;
-      // a word that matched but carries only a dash error is still "changed" for display
+      // a word that matched but carries only a dash error is still "changed" for display;
+      // matched words that joined a merged row are shown plain
+      if (ti < 0 || !o.errs.length) continue;
       changed.add(ti);
     }
     if (inRegion.length) {
@@ -624,8 +639,8 @@ function analyze(
     return { pieces: mergePieces(pieces), cue: null };
   };
 
-  for (const rg of regions) {
-    const kinds = Array.from(new Set(rg.flatMap((i) => ops[i].errs))) as Kind[];
+  for (const rg of rows) {
+    const kinds =Array.from(new Set(rg.flatMap((i) => ops[i].errs))) as Kind[];
     const r = sidePieces(rg, 'r', R, refByCue);
     const h = sidePieces(rg, 'h', H, hypByCue);
     const refTok = rg.map((i) => ops[i].r).find((x) => x >= 0);

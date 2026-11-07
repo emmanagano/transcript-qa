@@ -7,3 +7,6 @@ out
 next-env.d.ts
 .netlify
 AGENTS.md
+
+# real transcripts: sensitive, never commit
+/testers/
