@@ -91,7 +91,7 @@ export default function ResultsPage() {
             {current.aiTool && <Pill bg="#EEF1EF" fg="#17262B">{current.aiTool}</Pill>}
           </div>
           {current.saveError ? (
-            <p role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-2.5 text-sm text-del-fg">
+            <p role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-del-line bg-del-bg px-4 py-2.5 text-sm text-del-fg">
               Your score couldn’t be saved: {current.saveError}
               <button onClick={retry} disabled={retrying} className="font-bold underline">
                 {retrying ? 'Trying…' : 'Try again'}

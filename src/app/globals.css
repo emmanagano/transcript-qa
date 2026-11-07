@@ -25,6 +25,8 @@
 
   --color-del-bg: #fde4e1; /* struck-out words */
   --color-del-fg: #a3261a;
+  --color-del-line: #f2b8b0; /* border of error boxes */
+  --color-del-strong: #8e2a22; /* hover for the red delete button */
   --color-ins-bg: #ddf3e4; /* corrected / added words */
   --color-ins-fg: #17603a;
   --color-ins-line: #2f9e62;

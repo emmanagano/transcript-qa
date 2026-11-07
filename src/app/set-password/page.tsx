@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
@@ -30,7 +31,7 @@ export default function SetPasswordPage() {
       <main className="mx-auto flex max-w-[440px] flex-col gap-4 px-6 py-24">
         <h1 className="text-2xl font-bold">This link has expired</h1>
         <p className="text-muted">Invite and reset links only work once and for a limited time. Ask for a new invite, or request a new reset link from the login page.</p>
-        <a href="/login" className="font-semibold">Go to log in</a>
+        <Link href="/login" className="font-semibold">Go to log in</Link>
       </main>
     );
   }
@@ -48,7 +49,13 @@ export default function SetPasswordPage() {
       return;
     }
     if (name.trim() && name.trim() !== profile?.full_name) {
-      await supabase.from('profiles').update({ full_name: name.trim() }).eq('id', session.user.id);
+      const { error: nameError } = await supabase.from('profiles').update({ full_name: name.trim() }).eq('id', session.user.id);
+      if (nameError) {
+        // the password is already set, so say that and let them fix the name later
+        setError(`Your password was saved, but your name couldn’t be: ${nameError.message}`);
+        setBusy(false);
+        return;
+      }
       await refreshProfile();
     }
     clearNeedsPassword();
@@ -79,7 +86,7 @@ export default function SetPasswordPage() {
           <label htmlFor="pw2" className="text-sm font-semibold">Confirm password</label>
           <input id="pw2" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} />
         </div>
-        {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
+        {error && <p role="alert" className="rounded-xl border border-del-line bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
         <button type="submit" disabled={busy} className="h-12 rounded-xl bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">
           {busy ? 'Saving…' : 'Save and continue'}
         </button>

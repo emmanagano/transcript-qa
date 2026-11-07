@@ -523,7 +523,9 @@ function analyze(
   // a reference line that lost its neighbouring extra words also counts as not clean
   ops.forEach((o, idx) => {
     if (o.r < 0 && o.errs.length) {
-      const nb = ops[idx - 1]?.r ?? -1;
+      // the nearest reference word before it; at the very start of the file, the one after it
+      let nb = ops[idx - 1]?.r ?? -1;
+      if (nb < 0) nb = ops.slice(idx + 1).find((x) => x.r >= 0)?.r ?? -1;
       if (nb >= 0) refCueHasError[R[nb].cue] = true;
     }
   });

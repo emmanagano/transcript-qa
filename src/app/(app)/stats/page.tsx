@@ -154,7 +154,7 @@ export default function StatsPage() {
         </div>
       </div>
 
-      {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">Couldn’t load stats: {error}</p>}
+      {error && <p role="alert" className="rounded-xl border border-del-line bg-del-bg px-4 py-3 text-sm text-del-fg">Couldn’t load stats: {error}</p>}
 
       <div role="tablist" aria-label="Stats type" className="flex flex-wrap border-b border-field">
         {(['accuracy', 'effort'] as Mode[]).map((m) => {
@@ -217,7 +217,7 @@ export default function StatsPage() {
         </div>
 
         {actionError && (
-          <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{actionError}</p>
+          <p role="alert" className="rounded-xl border border-del-line bg-del-bg px-4 py-3 text-sm text-del-fg">{actionError}</p>
         )}
 
         {groups.length === 0 && (
@@ -289,7 +289,7 @@ export default function StatsPage() {
                               {confirmId === x.id ? (
                                 <>
                                   <span className="text-sm font-semibold">Delete?</span>
-                                  <button onClick={() => remove(x.id)} className="min-h-9 rounded-lg bg-[#A3261A] px-3 text-sm font-bold text-white hover:bg-[#8E2A22]">Yes, delete</button>
+                                  <button onClick={() => remove(x.id)} className="min-h-9 rounded-lg bg-del-fg px-3 text-sm font-bold text-white hover:bg-del-strong">Yes, delete</button>
                                   <button onClick={() => setConfirmId(null)} className="min-h-9 rounded-lg border-[1.5px] border-field bg-white px-3 text-sm font-bold">Cancel</button>
                                 </>
                               ) : (

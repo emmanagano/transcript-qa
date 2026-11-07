@@ -154,14 +154,18 @@ export default function UploadPage() {
         <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#C2510F] bg-[#FDEEE4] p-5">
           <p className="font-bold">These two files might not belong together</p>
           <p className="text-[15px]">
-            Your transcript has {mismatch.result.hypWords.toLocaleString()} words and the {current.refNoun} has{' '}
-            {mismatch.result.refWords.toLocaleString()}. That usually means a wrong file, or only part of the case. Saving it would add a misleading score to your stats.
+            Your transcript has {(mine?.words ?? mismatch.result.hypWords).toLocaleString()} words and the {current.refNoun} has{' '}
+            {(ref?.words ?? mismatch.result.refWords).toLocaleString()}. That usually means a wrong file, or only part of the case. Saving it would add a misleading score to your stats.
           </p>
           <div className="flex flex-wrap gap-3">
             <button onClick={() => setMismatch(null)} className="inline-flex h-12 items-center rounded-xl border-[1.5px] border-ink bg-white px-5 font-bold">
               Check the files
             </button>
-            <button onClick={() => finish(mismatch.result)} className="inline-flex h-11 items-center px-3 font-semibold text-brand hover:text-brand-dark">
+            <button
+              onClick={() => finish(mismatch.result)}
+              disabled={busy}
+              className="inline-flex h-11 items-center px-3 font-semibold text-brand hover:text-brand-dark disabled:opacity-60"
+            >
               Compare and save anyway
             </button>
           </div>

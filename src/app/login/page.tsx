@@ -95,7 +95,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {error && <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
+          {error && <p role="alert" className="rounded-xl border border-del-line bg-del-bg px-4 py-3 text-sm text-del-fg">{error}</p>}
           {notice && <p role="status" className="rounded-xl border border-ins-line bg-ins-bg px-4 py-3 text-sm text-ins-fg">{notice}</p>}
 
           <button type="submit" disabled={busy} className="h-12 rounded-xl bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60">

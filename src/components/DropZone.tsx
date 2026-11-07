@@ -138,7 +138,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
             onDragLeave={() => setOver(false)}
             onDrop={onDrop}
             className={`flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed p-5 text-center ${
-              over ? 'border-brand bg-tint-soft' : 'border-field bg-[#FBFCFB] hover:border-brand'
+              over ? 'border-brand bg-tint-soft' : 'border-field bg-page hover:border-brand'
             }`}
           >
             <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.8">
@@ -153,7 +153,7 @@ export function DropZone({ title, noun, barColor, file, onFile, parse }: Props) 
         )}
         <input ref={inputRef} id={id} type="file" accept=".srt" className="sr-only" onChange={(e) => take(e.target.files?.[0])} />
         {error && (
-          <p role="alert" className="rounded-xl border border-[#F2B8B0] bg-del-bg px-4 py-3 text-sm text-del-fg">
+          <p role="alert" className="rounded-xl border border-del-line bg-del-bg px-4 py-3 text-sm text-del-fg">
             {error}
           </p>
         )}
